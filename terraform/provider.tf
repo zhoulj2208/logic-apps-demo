@@ -4,3 +4,6 @@ provider "azurerm" {
 }
 
 provider "azapi" {}
+
+
+provider "template" {}

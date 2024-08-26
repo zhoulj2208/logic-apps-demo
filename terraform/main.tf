@@ -102,8 +102,7 @@ resource "azurerm_logic_app_workflow" "workflow1" {
 resource "azurerm_logic_app_trigger_custom" "trigger" {
   name         = "Recurrence"
   logic_app_id = azurerm_logic_app_workflow.workflow1.id
-
-  body = file("actions/trigger.json")
+  body         = file("actions/trigger.json")
 
   depends_on = [ 
     azurerm_logic_app_workflow.workflow1
@@ -114,13 +113,20 @@ resource "azurerm_logic_app_trigger_custom" "trigger" {
 resource "azurerm_logic_app_action_custom" "getappid" {
   name         = "GetAppID"
   logic_app_id = azurerm_logic_app_workflow.workflow1.id
-  body         = file("actions/step100-get-appid.json")
+  #body         = file("actions/step100-get-appid.json")
+  body         = data.template_file.init.rendered
 
   depends_on = [ 
     azurerm_logic_app_trigger_custom.trigger
    ]
 }
 
-
+data "template_file" "init" {
+  template = file("actions/step100-get-appid-json.tpl")
+  vars = {
+    varConnType = "${var.api_type}",
+    varAppId    = "${var.secret_app_id}"
+  }
+}
 
 
