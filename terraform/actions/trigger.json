@@ -1,0 +1,11 @@
+{
+  "recurrence": {
+    "interval": 1,
+    "frequency": "Month"
+  },
+  "evaluatedRecurrence": {
+    "interval": 1,
+    "frequency": "Month"
+  },
+  "type": "Recurrence"
+}
