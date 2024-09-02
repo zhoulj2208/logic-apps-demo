@@ -1,11 +1,6 @@
 
 data "azurerm_client_config" "current" {}
 
-data "azurerm_key_vault" "kv" {
-  name                = "kv-sp-001"
-  resource_group_name = "rg-devops-materials"
-}
-
 data "azurerm_managed_api" "this" {
  name     = "keyvault"
  location = var.rg_location
@@ -14,11 +9,43 @@ data "azurerm_managed_api" "this" {
 resource "azurerm_resource_group" "rg" {
   location = var.rg_location
   name     = var.rg_name
-
   tags = {
     createby = "eirc"
   }
+}
 
+resource "azurerm_key_vault" "kv" {
+  name                = var.kv_name
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+  tenant_id           = data.azurerm_client_config.current.tenant_id
+  sku_name            = "standard"
+
+    access_policy {
+    tenant_id = data.azurerm_client_config.current.tenant_id
+    object_id = data.azurerm_client_config.current.object_id
+
+    secret_permissions = [
+      "List",
+      "Set",
+      "Get",
+      "Delete",
+      "Purge",
+      "Recover"
+    ]
+  }
+  tags = {
+    createby = "eric"
+  }
+  depends_on = [ azurerm_resource_group.rg ]
+}
+
+resource "azurerm_key_vault_secret" "secret1" {
+  name         = "AppID"
+  value        = "szechuan_v2"
+  key_vault_id = azurerm_key_vault.kv.id
+
+  depends_on = [ azurerm_key_vault.kv ]
 }
 
 resource "azurerm_user_assigned_identity" "uai" {
@@ -34,7 +61,7 @@ resource "azurerm_user_assigned_identity" "uai" {
 }
 
 resource "azurerm_key_vault_access_policy" "uai_access" {
-  key_vault_id = data.azurerm_key_vault.kv.id
+  key_vault_id = azurerm_key_vault.kv.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = azurerm_user_assigned_identity.uai.principal_id
 
@@ -64,7 +91,7 @@ resource "azapi_resource" "kv" {
         "name": "oauthMI",
         "values": {
           "vaultName": {
-            "value": "${data.azurerm_key_vault.kv.name}"
+            "value": "${azurerm_key_vault.kv.name}"
           }
         }
       },

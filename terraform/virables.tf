@@ -16,3 +16,10 @@ variable "secret_app_id" {
   type = string
   default = "AppID"
 }
+
+variable "kv_name" {
+  type    = string
+  default = "kv-sp-002"
+}
+
+
